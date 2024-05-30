@@ -10,14 +10,26 @@ import { useDispatch, useSelector } from "react-redux";
 import { getBasicSalary } from "@/redux/basicSalary/BasicSalary";
 import { RootState } from "@/redux/store";
 
+interface Earning {
+  id: number;
+  value: string;
+  epfEtf: boolean;
+  amount: number;
+}
+
 const Page = () => {
   const dispatch = useDispatch();
 
   /*=============== Earnings ===============*/
-  const [earnings, setEarnings] = useState([
+  const [earnings, setEarnings] = useState<Earning[]>([
     { id: 1, value: "", epfEtf: false, amount: 0 },
   ]);
-  const [deductions, setDeductions] = useState([{ id: 1, value: "" }]);
+  const [totalEarnings, setTotalEarnings] = useState<number>(0);
+  useEffect(() => {
+    const total = earnings.reduce((acc, curr) => acc + curr.amount, 0);
+    setTotalEarnings(total);
+  }, [earnings]);
+  console.log(totalEarnings)
 
   const addEarning = () => {
     setEarnings([
@@ -30,8 +42,17 @@ const Page = () => {
     setEarnings(earnings.filter((earning) => earning.id !== id));
   };
   
+  const handleEarningChange = (id: number, key: string, value: any) => {
+    setEarnings((prevEarnings) =>
+      prevEarnings.map((earning) =>
+        earning.id === id ? { ...earning, [key]: value } : earning
+      )
+    );
+  };
+
  /*=============== Deductions ===============*/
- 
+ const [deductions, setDeductions] = useState([{ id: 1, value: "" }]);
+
   const addDeduction = () => {
     setDeductions([...deductions, { id: deductions.length + 1, value: "" }]);
   };
@@ -99,13 +120,7 @@ const Page = () => {
                   placeholder="Pay Details (Title)"
                   value={earning.value}
                   onChange={(e) =>
-                    setEarnings(
-                      earnings.map((item) =>
-                        item.id === earning.id
-                          ? { ...item, value: e.target.value }
-                          : item
-                      )
-                    )
+                    handleEarningChange(earning.id, "value", e.target.value)
                   }
                 />
                 <Input
@@ -115,6 +130,10 @@ const Page = () => {
                   variant="bordered"
                   radius="sm"
                   className="w-2/5"
+                  value={earning.amount.toString()}
+                  onChange={(e) =>
+                    handleEarningChange(earning.id, "amount", +e.target.value)
+                  }
                 />
               </div>
               <div className="flex items-center justify-start gap-5 pl-5 w-1/2">
@@ -131,13 +150,7 @@ const Page = () => {
                 <Checkbox
                   checked={earning.epfEtf}
                   onChange={(e) =>
-                    setEarnings(
-                      earnings.map((item) =>
-                        item.id === earning.id
-                          ? { ...item, epfEtf: e.target.checked }
-                          : item
-                      )
-                    )
+                    handleEarningChange(earning.id, "epfEtf", e.target.checked)
                   }
                 >
                   EPF/ETF
@@ -225,7 +238,7 @@ const Page = () => {
           </div>
           <div className="flex justify-between">
             <span>Gross Earning</span>
-            <span>160,000.00</span>
+            <span>{totalEarnings ? `${totalEarnings}.00` : "0.00"}</span>
           </div>
           <div className="flex justify-between">
             <span>Gross Deduction</span>
