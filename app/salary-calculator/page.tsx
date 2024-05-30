@@ -9,6 +9,8 @@ import { FaPlus } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { getBasicSalary } from "@/redux/basicSalary/BasicSalary";
 import { RootState } from "@/redux/store";
+import { getEarnings } from "@/redux/earnings/Earnings";
+import { getDeductions } from "@/redux/deductions/Deductions";
 
 interface Earnings {
   id: number;
@@ -24,11 +26,34 @@ interface Deductions {
 
 const Page = () => {
   const dispatch = useDispatch();
+  
+  /*=============== Get data ===============*/
+  const [basicSalary, setBasicSalary] = useState("0");
+  const StoredBasicSalary = useSelector(
+    (state: RootState) => state.basicSalary.basicSalary
+  );
+
+  const StoredEarning = useSelector(
+    (state: RootState) => state.earnings.earnings
+  );
+  const StoredDeductions = useSelector(
+    (state: RootState) => state.deductions.deductions
+  );
+
+  useEffect(() => {
+    setBasicSalary(StoredBasicSalary);
+  }, [StoredBasicSalary]);
 
   /*=============== Earnings ===============*/
-  const [earnings, setEarnings] = useState<Earnings[]>([
-    { id: 1, value: "", epfEtf: false, amount: 0 },
-  ]);
+  const [earnings, setEarnings] = useState<Earnings[]>([]);
+
+  useEffect(() => {
+    if (StoredEarning.length > 0) {
+      setEarnings(StoredEarning);
+    } else {
+      setEarnings([{ id: 1, value: "", epfEtf: false, amount: 0 }]);
+    }
+  }, []);
 
   const addEarning = () => {
     setEarnings([
@@ -40,7 +65,7 @@ const Page = () => {
   const removeEarning = (id: number) => {
     setEarnings(earnings.filter((earning) => earning.id !== id));
   };
-  
+
   const handleEarningChange = (id: number, key: string, value: any) => {
     setEarnings((prevEarnings) =>
       prevEarnings.map((earning) =>
@@ -53,14 +78,25 @@ const Page = () => {
   useEffect(() => {
     const total = earnings.reduce((acc, curr) => acc + curr.amount, 0);
     setTotalEarnings(total);
+    dispatch(getEarnings(earnings));
   }, [earnings]);
 
+  /*=============== Deductions ===============*/
+  const [deductions, setDeductions] = useState<Deductions[]>([]);
 
- /*=============== Deductions ===============*/
- const [deductions, setDeductions] = useState<Deductions[]>([{ id: 1, value: "",  amount: 0  }]);
+  useEffect(() => {
+    if (StoredDeductions.length > 0) {
+      setDeductions(StoredDeductions);
+    } else {
+      setDeductions([{ id: 1, value: "", amount: 0 }]);
+    }
+  }, []);
 
   const addDeduction = () => {
-    setDeductions([...deductions, { id: deductions.length + 1, value: "",  amount: 0  }]);
+    setDeductions([
+      ...deductions,
+      { id: deductions.length + 1, value: "", amount: 0 },
+    ]);
   };
 
   const removeDeduction = (id: number) => {
@@ -79,23 +115,14 @@ const Page = () => {
   useEffect(() => {
     const total = deductions.reduce((acc, curr) => acc + curr.amount, 0);
     setTotalDeductions(total);
+    dispatch(getDeductions(deductions));
   }, [deductions]);
-
 
   /*=============== dispatch data ===============*/
   const handleBasicSalaryChange = (e: { target: { value: any } }) => {
     const value = e.target.value;
     dispatch(getBasicSalary(value));
   };
-
-  /*=============== Get data ===============*/
-  const StoredBasicSalary = useSelector(
-    (state: RootState) => state.basicSalary.basicSalary
-  );
-  const [basicSalary, setBasicSalary] = useState("0");
-  useEffect(() => {
-    setBasicSalary(StoredBasicSalary);
-  }, [StoredBasicSalary]);
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -216,7 +243,11 @@ const Page = () => {
                   className="w-2/5"
                   value={deduction.amount.toString()}
                   onChange={(e) =>
-                    handleDeductionChange(deduction.id, "amount", +e.target.value)
+                    handleDeductionChange(
+                      deduction.id,
+                      "amount",
+                      +e.target.value
+                    )
                   }
                 />
               </div>

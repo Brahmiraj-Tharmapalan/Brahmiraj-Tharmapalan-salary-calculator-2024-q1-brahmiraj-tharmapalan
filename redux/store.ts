@@ -3,10 +3,12 @@ import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import  basicSalaryReducer from "@/redux/basicSalary/BasicSalary";
 import earningsReducer from "@/redux/earnings/Earnings";
+import deductionsReducer from "@/redux/deductions/Deductions";
 
 const rootReducer = combineReducers({
   basicSalary:  basicSalaryReducer,
-  earnings: earningsReducer
+  earnings: earningsReducer,
+  deductions: deductionsReducer
 });
 
 const persistConfig = {
