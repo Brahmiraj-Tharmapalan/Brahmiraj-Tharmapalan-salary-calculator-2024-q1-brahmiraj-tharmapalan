@@ -10,10 +10,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { getBasicSalary } from "@/redux/basicSalary/BasicSalary";
 import { RootState } from "@/redux/store";
 
-interface Earning {
+interface Earnings {
   id: number;
   value: string;
   epfEtf: boolean;
+  amount: number;
+}
+interface Deductions {
+  id: number;
+  value: string;
   amount: number;
 }
 
@@ -21,15 +26,9 @@ const Page = () => {
   const dispatch = useDispatch();
 
   /*=============== Earnings ===============*/
-  const [earnings, setEarnings] = useState<Earning[]>([
+  const [earnings, setEarnings] = useState<Earnings[]>([
     { id: 1, value: "", epfEtf: false, amount: 0 },
   ]);
-  const [totalEarnings, setTotalEarnings] = useState<number>(0);
-  useEffect(() => {
-    const total = earnings.reduce((acc, curr) => acc + curr.amount, 0);
-    setTotalEarnings(total);
-  }, [earnings]);
-  console.log(totalEarnings)
 
   const addEarning = () => {
     setEarnings([
@@ -50,16 +49,38 @@ const Page = () => {
     );
   };
 
+  const [totalEarnings, setTotalEarnings] = useState<number>(0);
+  useEffect(() => {
+    const total = earnings.reduce((acc, curr) => acc + curr.amount, 0);
+    setTotalEarnings(total);
+  }, [earnings]);
+
+
  /*=============== Deductions ===============*/
- const [deductions, setDeductions] = useState([{ id: 1, value: "" }]);
+ const [deductions, setDeductions] = useState<Deductions[]>([{ id: 1, value: "",  amount: 0  }]);
 
   const addDeduction = () => {
-    setDeductions([...deductions, { id: deductions.length + 1, value: "" }]);
+    setDeductions([...deductions, { id: deductions.length + 1, value: "",  amount: 0  }]);
   };
 
   const removeDeduction = (id: number) => {
     setDeductions(deductions.filter((deduction) => deduction.id !== id));
   };
+
+  const handleDeductionChange = (id: number, key: string, value: any) => {
+    setDeductions((prevDeductions) =>
+      prevDeductions.map((deduction) =>
+        deduction.id === id ? { ...deduction, [key]: value } : deduction
+      )
+    );
+  };
+
+  const [totalDeductions, setTotalDeductions] = useState<number>(0);
+  useEffect(() => {
+    const total = deductions.reduce((acc, curr) => acc + curr.amount, 0);
+    setTotalDeductions(total);
+  }, [deductions]);
+
 
   /*=============== dispatch data ===============*/
   const handleBasicSalaryChange = (e: { target: { value: any } }) => {
@@ -183,13 +204,7 @@ const Page = () => {
                   placeholder="Pay Details (Title)"
                   value={deduction.value}
                   onChange={(e) =>
-                    setDeductions(
-                      deductions.map((item) =>
-                        item.id === deduction.id
-                          ? { ...item, value: e.target.value }
-                          : item
-                      )
-                    )
+                    handleDeductionChange(deduction.id, "value", e.target.value)
                   }
                 />
                 <Input
@@ -199,6 +214,10 @@ const Page = () => {
                   variant="bordered"
                   radius="sm"
                   className="w-2/5"
+                  value={deduction.amount.toString()}
+                  onChange={(e) =>
+                    handleDeductionChange(deduction.id, "amount", +e.target.value)
+                  }
                 />
               </div>
               <div className="flex items-center justify-start gap-5 pl-5 w-1/2">
@@ -242,7 +261,7 @@ const Page = () => {
           </div>
           <div className="flex justify-between">
             <span>Gross Deduction</span>
-            <span>- 8,000.00</span>
+            <span>{totalDeductions ? `- ${totalDeductions}.00` : "0.00"}</span>
           </div>
           <div className="flex justify-between">
             <span>Employee EPF (8%)</span>
