@@ -1,20 +1,31 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
-  deductions: []
+interface Deductions {
+  id: number;
+  value: string;
+  amount: number;
+}
+
+interface DeductionsState {
+  deductions: Deductions[];
+}
+
+const initialState: DeductionsState = {
+  deductions: [],
 };
 
-const  deductionsSlice = createSlice({
-  name: "deductions",
+const deductionsSlice = createSlice({
+  name: 'deductions',
   initialState,
   reducers: {
-    getDeductions: (state, action) => {
+    getDeductions(state, action: PayloadAction<Deductions[]>) {
       state.deductions = action.payload;
-     },
+    },
+    resetDeductions(state) {
+      state.deductions = initialState.deductions;
+    },
   },
 });
 
-export const {
-  getDeductions
-} = deductionsSlice.actions;
+export const { getDeductions, resetDeductions } = deductionsSlice.actions;
 export default deductionsSlice.reducer;

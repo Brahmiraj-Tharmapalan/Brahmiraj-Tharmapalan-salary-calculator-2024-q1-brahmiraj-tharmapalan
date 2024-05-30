@@ -7,11 +7,15 @@ import { SlReload } from "react-icons/sl";
 import { IoClose } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
-import { getBasicSalary } from "@/redux/basicSalary/BasicSalary";
+import {
+  getBasicSalary,
+  resetBasicSalary,
+} from "@/redux/basicSalary/BasicSalary";
 import { RootState } from "@/redux/store";
-import { getEarnings } from "@/redux/earnings/Earnings";
-import { getDeductions } from "@/redux/deductions/Deductions";
+import { getEarnings, resetEarnings } from "@/redux/earnings/Earnings";
+import { getDeductions, resetDeductions } from "@/redux/deductions/Deductions";
 import calculateTax from "@/lib/calculateTax";
+import Image from "next/image";
 
 interface Earnings {
   id: number;
@@ -39,18 +43,14 @@ const Page = () => {
     (state: RootState) => state.deductions.deductions
   );
 
-  interface BasicSalary {
-    basicSalary: number;
-  }
-  
   const [basicSalary, setBasicSalary] = useState<number>(0);
-  
+
   useEffect(() => {
     setBasicSalary(StoredBasicSalary);
   }, [StoredBasicSalary]);
-  
+
   const handleBasicSalaryChange = (e: { target: { value: any } }) => {
-    const value = e.target.value;
+    const value = +e.target.value;
     dispatch(getBasicSalary(value));
   };
 
@@ -92,8 +92,8 @@ const Page = () => {
   }, [earnings]);
 
   const totalEarningsForEPF = earnings
-  .filter((earning) => earning.epfEtf)
-  .reduce((acc, curr) => acc + curr.amount, 0);
+    .filter((earning) => earning.epfEtf)
+    .reduce((acc, curr) => acc + curr.amount, 0);
 
   /*=============== Deductions ===============*/
   const [deductions, setDeductions] = useState<Deductions[]>([]);
@@ -133,29 +133,46 @@ const Page = () => {
   }, [deductions]);
 
   /*=============== calculation ===============*/
-  //Gross Earnings
-  const grossEarnings = basicSalary*1 + sumOfEarnings*1;
-  const EmployeeEPF = (basicSalary*1 + totalEarningsForEPF*1 ) *0.08;
-  const EmployerEPF = (basicSalary*1 + totalEarningsForEPF*1 ) *0.12;
-  const EmployerETF = (basicSalary*1 + totalEarningsForEPF*1 ) *0.03;
+  const grossEarnings = (basicSalary ?? 0) * 1 + sumOfEarnings * 1;
+  const EmployeeEPF = ((basicSalary ?? 0) * 1 + totalEarningsForEPF * 1) * 0.08;
+  const EmployerEPF = ((basicSalary ?? 0) * 1 + totalEarningsForEPF * 1) * 0.12;
+  const EmployerETF = ((basicSalary ?? 0) * 1 + totalEarningsForEPF * 1) * 0.03;
   const APIT = calculateTax(grossEarnings);
-  const NetSalary = grossEarnings*1 - totalDeductions*1 - EmployeeEPF*1 - APIT;
-  const CTC = grossEarnings*1 - totalDeductions*1 + EmployerEPF*1 + EmployerETF*1;
+  const NetSalary =
+    grossEarnings * 1 - totalDeductions * 1 - EmployeeEPF * 1 - APIT;
+  const CTC =
+    grossEarnings * 1 - totalDeductions * 1 + EmployerEPF * 1 + EmployerETF * 1;
 
+  /*=============== Reset ===============*/
+  const resetAll = () => {
+    dispatch(resetBasicSalary());
+    dispatch(resetEarnings());
+    dispatch(resetDeductions());
+    setEarnings([{ id: 1, value: "", epfEtf: false, amount: 0 }]);
+    setDeductions([{ id: 1, value: "", amount: 0 }]);
+  };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md">
+    <div className="flex justify-center items-stretch align-i px-10 py-5 gap-10 max-xl:flex-col">
+      <div className="m p-6 bg-gray-100 rounded-lg shadow-md flex-auto ring-2 ring-[#E0E0E0] w-3/5 max-xl:w-full">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Calculate Your Salary</h1>
-          <Button color="primary" variant="light">
-            <SlReload className="w-5 h-5 text-blue-500" />
-            <span className="ml-2 text-blue-500">Reset</span>
+          <h4 className="text-xl font-bold">Calculate Your Salary</h4>
+          <Button color="primary" variant="light" onClick={resetAll}>
+            {/* <SlReload className="w-5 h-5 text-blue-500" /> */}
+            <Image
+              src="/assets/icons/reset.png"
+              alt="reset"
+              width={20}
+              height={20}
+            />
+            <span className="ml-2 text-xl text-blue-500 font-medium">
+              Reset
+            </span>
           </Button>
         </div>
         <div className="mb-6">
           <label
-            className="block text-sm font-medium mb-1"
+            className="text-base font-semibold block mb-2"
             htmlFor="basic-salary"
           >
             Basic Salary
@@ -166,24 +183,24 @@ const Page = () => {
             placeholder="Basic Salary"
             variant="bordered"
             radius="sm"
-            className="w-1/2"
+            className="w-1/2 max-md:w-full"
             onChange={handleBasicSalaryChange}
             value={basicSalary?.toString()}
           />
         </div>
         <div className="mb-6">
-          <h2 className="text-lg font-medium mb-2">Earnings</h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <h2 className="text-base font-semibold block mb-2">Earnings</h2>
+          <p className="text-sm font-normal block mb-2 text-gray-500">
             Allowance, Fixed Allowance, Bonus and etc.
           </p>
           {earnings.map((earning) => (
-            <div key={earning.id} className="flex mb-2">
-              <div className="flex items-center justify-between w-1/2 gap-2">
+            <div key={earning.id} className="flex mb-2 max-md:flex-col">
+              <div className="flex items-center justify-between w-1/2 max-md:w-full gap-2">
                 <Input
                   id={`Earnings${earning.id}`}
                   variant="bordered"
                   radius="sm"
-                  className="w-3/5"
+                  className="w-3/5 max-md:w-full"
                   placeholder="Pay Details (Title)"
                   value={earning.value}
                   onChange={(e) =>
@@ -196,14 +213,14 @@ const Page = () => {
                   placeholder="Amount"
                   variant="bordered"
                   radius="sm"
-                  className="w-2/5"
+                  className="w-2/5 max-md:w-full"
                   value={earning.amount.toString()}
                   onChange={(e) =>
                     handleEarningChange(earning.id, "amount", +e.target.value)
                   }
                 />
               </div>
-              <div className="flex items-center justify-start gap-5 pl-5 w-1/2">
+              <div className="flex items-center justify-start max-md:justify-around max-md:flex-col-reverse gap-5 max-md:gap-3 max-md:pt-2 pl-5 w-1/2 max-md:w-full ">
                 <Button
                   isIconOnly
                   color="default"
@@ -235,18 +252,18 @@ const Page = () => {
           </Button>
         </div>
         <div>
-          <h2 className="text-lg font-medium mb-2">Deductions</h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <h2 className="text-base font-semibold block mb-2">Deductions</h2>
+          <p className="text-sm font-normal block mb-2 text-gray-500">
             Salary Advances, Loan Deductions and all
           </p>
           {deductions.map((deduction) => (
-            <div key={deduction.id} className="flex mb-2">
-              <div className="flex items-center justify-between w-1/2 gap-2">
+            <div key={deduction.id} className="flex mb-2 max-md:flex-col max-md:items-center">
+              <div className="flex items-center justify-between w-1/2 max-md:w-full gap-2">
                 <Input
                   id={`Deductions${deduction.id}`}
                   variant="bordered"
                   radius="sm"
-                  className="w-3/5"
+                  className="w-3/5 max-md:w-full"
                   placeholder="Pay Details (Title)"
                   value={deduction.value}
                   onChange={(e) =>
@@ -259,7 +276,7 @@ const Page = () => {
                   placeholder="Amount"
                   variant="bordered"
                   radius="sm"
-                  className="w-2/5"
+                  className="w-2/5 max-md:w-full"
                   value={deduction.amount.toString()}
                   onChange={(e) =>
                     handleDeductionChange(
@@ -270,7 +287,7 @@ const Page = () => {
                   }
                 />
               </div>
-              <div className="flex items-center justify-start gap-5 pl-5 w-1/2">
+              <div className="flex items-center justify-start max-md:justify-center gap-5 pl-5 max-md:pl-0 max-md:pt-2 w-1/2">
                 <Button
                   isIconOnly
                   color="default"
@@ -294,54 +311,77 @@ const Page = () => {
           </Button>
         </div>
       </div>
-      <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Your salary</h2>
+      <div className="bg-gray-50 shadow-md rounded-lg p-6 flex-auto ring-2 ring-[#E0E0E0] w-2/5 max-xl:w-full">
+        <h2 className="text-xl font-bold pb-2">Your salary</h2>
         <div className="space-y-2">
-          <div className="flex justify-between border-b pb-2">
-            <span className="font-medium">Items</span>
-            <span className="font-medium">Amount</span>
+          <div className="flex justify-between pb-2">
+            <span className="text-sm font-normal block text-gray-500">
+              Items
+            </span>
+            <span className="text-sm font-normal block text-gray-500">
+              Amount
+            </span>
           </div>
           <div className="flex justify-between">
-            <span>Basic Salary</span>
-            <span>{basicSalary ? `${basicSalary}.00` : "0.00"}</span>
+            <span className="font-normal text-base">Basic Salary</span>
+            <span className="font-normal text-base">
+              {basicSalary ? `${basicSalary}.00` : "0.00"}
+            </span>
           </div>
           <div className="flex justify-between">
-            <span>Gross Earning</span>
-            <span>{grossEarnings ? `${grossEarnings}.00` : "0.00"}</span>
+            <span className="font-normal text-base">Gross Earning</span>
+            <span className="font-normal text-base">
+              {grossEarnings ? `${grossEarnings}.00` : "0.00"}
+            </span>
           </div>
           <div className="flex justify-between">
-            <span>Gross Deduction</span>
-            <span>{totalDeductions ? `- ${totalDeductions}.00` : "0.00"}</span>
+            <span className="font-normal text-base">Gross Deduction</span>
+            <span className="font-normal text-base">
+              {totalDeductions ? `- ${totalDeductions}.00` : "0.00"}
+            </span>
           </div>
           <div className="flex justify-between">
-            <span>Employee EPF (8%)</span>
-            <span>{EmployeeEPF ? `- ${EmployeeEPF}.00` : "0.00"}</span>
+            <span className="font-normal text-base">Employee EPF (8%)</span>
+            <span className="font-normal text-base">
+              {EmployeeEPF ? `- ${EmployeeEPF}.00` : "0.00"}
+            </span>
           </div>
           <div className="flex justify-between">
-            <span>APIT</span>
-            <span>{APIT ? `- ${APIT}.00` : "0.00"}</span>
+            <span className="font-normal text-base">APIT</span>
+            <span className="font-normal text-base">
+              {APIT ? `- ${APIT}.00` : "0.00"}
+            </span>
           </div>
-          <div className="flex justify-between border-t pt-2 mt-2">
-            <span className="font-semibold">Net Salary (Take Home)</span>
-            <span>{NetSalary ? `${NetSalary}.00` : "0.00"}</span>
-
+          <div className="py-5">
+            <div className="flex justify-between rounded-sm ring-2 ring-[#E0E0E0] p-2">
+              <span className="font-semibold text-base max-md:flex max-md:flex-col">
+                <span>Net Salary</span><span>(Take Home)</span>
+              </span>
+              <span className="font-semibold text-base">
+                {NetSalary ? `${NetSalary}.00` : "0.00"}
+              </span>
+            </div>
           </div>
         </div>
-        <h3 className="text-lg font-semibold mt-4">
+        <h3 className="font-semibold text-sm text-gray-500 pb-5">
           Contribution from the Employeer
         </h3>
         <div className="space-y-2">
           <div className="flex justify-between">
-            <span>Employeer EPF (12%)</span>
-            <span>{EmployerEPF ? `${EmployerEPF}.00` : "0.00"}</span>
+            <span className="font-normal text-base">Employeer EPF (12%)</span>
+            <span className="font-normal text-base">
+              {EmployerEPF ? `${EmployerEPF}.00` : "0.00"}
+            </span>
           </div>
           <div className="flex justify-between">
-            <span>Employeer ETF (3%)</span>
-            <span>{EmployerETF ? `${EmployerETF}.00` : "0.00"}</span>
+            <span className="font-normal text-base">Employeer ETF (3%)</span>
+            <span className="font-normal text-base">
+              {EmployerETF ? `${EmployerETF}.00` : "0.00"}
+            </span>
           </div>
           <div className="flex justify-between border-t pt-2 mt-2">
-            <span className="font-semibold">CTC (Cost to Company)</span>
-            <span>{CTC ? `${CTC}.00` : "0.00"}</span>
+            <span className="font-normal text-base">CTC (Cost to Company)</span>
+            <span className="font-normal text-base">{CTC ? `${CTC}.00` : "0.00"}</span>
           </div>
         </div>
       </div>

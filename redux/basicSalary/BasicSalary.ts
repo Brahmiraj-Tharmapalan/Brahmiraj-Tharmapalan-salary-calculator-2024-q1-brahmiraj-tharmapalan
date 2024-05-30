@@ -1,20 +1,25 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
-  basicSalary: 0
+interface BasicSalaryState {
+  basicSalary: number;
+}
+
+const initialState: BasicSalaryState = {
+  basicSalary: 0,
 };
 
-const  basicSalarySlice = createSlice({
-  name: "basicSalary",
+const basicSalarySlice = createSlice({
+  name: 'basicSalary',
   initialState,
   reducers: {
-    getBasicSalary: (state, action) => {
+    getBasicSalary(state, action: PayloadAction<number>) {
       state.basicSalary = action.payload;
-     },
+    },
+    resetBasicSalary(state) {
+      state.basicSalary = initialState.basicSalary;
+    },
   },
 });
 
-export const {
-  getBasicSalary
-} = basicSalarySlice.actions;
+export const { getBasicSalary, resetBasicSalary } = basicSalarySlice.actions;
 export default basicSalarySlice.reducer;

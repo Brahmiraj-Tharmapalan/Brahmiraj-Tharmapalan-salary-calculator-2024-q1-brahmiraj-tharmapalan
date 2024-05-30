@@ -13,6 +13,9 @@ module.exports = {
         sans: ["var(--font-sans)"],
         mono: ["var(--font-geist-mono)"],
       },
+      backgroundImage: {
+        'main-bg': "url('/assets/images/main-bg.png')",
+      },
     },
   },
   darkMode: "class",

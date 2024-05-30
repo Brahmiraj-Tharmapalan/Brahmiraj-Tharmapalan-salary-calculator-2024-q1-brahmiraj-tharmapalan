@@ -1,18 +1,18 @@
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { persistReducer, persistStore } from "redux-persist";
-import storage from "redux-persist/lib/storage";
-import  basicSalaryReducer from "@/redux/basicSalary/BasicSalary";
-import earningsReducer from "@/redux/earnings/Earnings";
-import deductionsReducer from "@/redux/deductions/Deductions";
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { persistReducer, persistStore } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import basicSalaryReducer from '@/redux/basicSalary/BasicSalary';
+import earningsReducer from '@/redux/earnings/Earnings';
+import deductionsReducer from '@/redux/deductions/Deductions';
 
 const rootReducer = combineReducers({
-  basicSalary:  basicSalaryReducer,
+  basicSalary: basicSalaryReducer,
   earnings: earningsReducer,
-  deductions: deductionsReducer
+  deductions: deductionsReducer,
 });
 
 const persistConfig = {
-  key: "root",
+  key: 'root',
   version: 1,
   storage,
 };
