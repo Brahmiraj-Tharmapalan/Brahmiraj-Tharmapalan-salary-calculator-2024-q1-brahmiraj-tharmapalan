@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  basicSalary: ""
+  basicSalary: 0
 };
 
 const  basicSalarySlice = createSlice({

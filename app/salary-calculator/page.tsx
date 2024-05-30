@@ -11,6 +11,7 @@ import { getBasicSalary } from "@/redux/basicSalary/BasicSalary";
 import { RootState } from "@/redux/store";
 import { getEarnings } from "@/redux/earnings/Earnings";
 import { getDeductions } from "@/redux/deductions/Deductions";
+import calculateTax from "@/lib/calculateTax";
 
 interface Earnings {
   id: number;
@@ -26,13 +27,11 @@ interface Deductions {
 
 const Page = () => {
   const dispatch = useDispatch();
-  
+
   /*=============== Get data ===============*/
-  const [basicSalary, setBasicSalary] = useState("0");
   const StoredBasicSalary = useSelector(
     (state: RootState) => state.basicSalary.basicSalary
   );
-
   const StoredEarning = useSelector(
     (state: RootState) => state.earnings.earnings
   );
@@ -40,9 +39,20 @@ const Page = () => {
     (state: RootState) => state.deductions.deductions
   );
 
+  interface BasicSalary {
+    basicSalary: number;
+  }
+  
+  const [basicSalary, setBasicSalary] = useState<number>(0);
+  
   useEffect(() => {
     setBasicSalary(StoredBasicSalary);
   }, [StoredBasicSalary]);
+  
+  const handleBasicSalaryChange = (e: { target: { value: any } }) => {
+    const value = e.target.value;
+    dispatch(getBasicSalary(value));
+  };
 
   /*=============== Earnings ===============*/
   const [earnings, setEarnings] = useState<Earnings[]>([]);
@@ -74,12 +84,16 @@ const Page = () => {
     );
   };
 
-  const [totalEarnings, setTotalEarnings] = useState<number>(0);
+  const [sumOfEarnings, setSumOfEarnings] = useState<number>(0);
   useEffect(() => {
     const total = earnings.reduce((acc, curr) => acc + curr.amount, 0);
-    setTotalEarnings(total);
+    setSumOfEarnings(total);
     dispatch(getEarnings(earnings));
   }, [earnings]);
+
+  const totalEarningsForEPF = earnings
+  .filter((earning) => earning.epfEtf)
+  .reduce((acc, curr) => acc + curr.amount, 0);
 
   /*=============== Deductions ===============*/
   const [deductions, setDeductions] = useState<Deductions[]>([]);
@@ -118,11 +132,16 @@ const Page = () => {
     dispatch(getDeductions(deductions));
   }, [deductions]);
 
-  /*=============== dispatch data ===============*/
-  const handleBasicSalaryChange = (e: { target: { value: any } }) => {
-    const value = e.target.value;
-    dispatch(getBasicSalary(value));
-  };
+  /*=============== calculation ===============*/
+  //Gross Earnings
+  const grossEarnings = basicSalary*1 + sumOfEarnings*1;
+  const EmployeeEPF = (basicSalary*1 + totalEarningsForEPF*1 ) *0.08;
+  const EmployerEPF = (basicSalary*1 + totalEarningsForEPF*1 ) *0.12;
+  const EmployerETF = (basicSalary*1 + totalEarningsForEPF*1 ) *0.03;
+  const APIT = calculateTax(grossEarnings);
+  const NetSalary = grossEarnings*1 - totalDeductions*1 - EmployeeEPF*1 - APIT;
+  const CTC = grossEarnings*1 - totalDeductions*1 + EmployerEPF*1 + EmployerETF*1;
+
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -149,7 +168,7 @@ const Page = () => {
             radius="sm"
             className="w-1/2"
             onChange={handleBasicSalaryChange}
-            value={basicSalary}
+            value={basicSalary?.toString()}
           />
         </div>
         <div className="mb-6">
@@ -288,7 +307,7 @@ const Page = () => {
           </div>
           <div className="flex justify-between">
             <span>Gross Earning</span>
-            <span>{totalEarnings ? `${totalEarnings}.00` : "0.00"}</span>
+            <span>{grossEarnings ? `${grossEarnings}.00` : "0.00"}</span>
           </div>
           <div className="flex justify-between">
             <span>Gross Deduction</span>
@@ -296,32 +315,33 @@ const Page = () => {
           </div>
           <div className="flex justify-between">
             <span>Employee EPF (8%)</span>
-            <span>- 12,160.00</span>
+            <span>{EmployeeEPF ? `- ${EmployeeEPF}.00` : "0.00"}</span>
           </div>
           <div className="flex justify-between">
             <span>APIT</span>
-            <span>- 3,740.00</span>
+            <span>{APIT ? `- ${APIT}.00` : "0.00"}</span>
           </div>
           <div className="flex justify-between border-t pt-2 mt-2">
             <span className="font-semibold">Net Salary (Take Home)</span>
-            <span className="font-semibold">136,100.00</span>
+            <span>{NetSalary ? `${NetSalary}.00` : "0.00"}</span>
+
           </div>
         </div>
         <h3 className="text-lg font-semibold mt-4">
-          Contribution from the Employer
+          Contribution from the Employeer
         </h3>
         <div className="space-y-2">
           <div className="flex justify-between">
-            <span>Employee EPF (12%)</span>
-            <span>18,240.00</span>
+            <span>Employeer EPF (12%)</span>
+            <span>{EmployerEPF ? `${EmployerEPF}.00` : "0.00"}</span>
           </div>
           <div className="flex justify-between">
-            <span>Employee ETF (3%)</span>
-            <span>4,560.00</span>
+            <span>Employeer ETF (3%)</span>
+            <span>{EmployerETF ? `${EmployerETF}.00` : "0.00"}</span>
           </div>
           <div className="flex justify-between border-t pt-2 mt-2">
             <span className="font-semibold">CTC (Cost to Company)</span>
-            <span className="font-semibold">174,800.00</span>
+            <span>{CTC ? `${CTC}.00` : "0.00"}</span>
           </div>
         </div>
       </div>
