@@ -23,7 +23,7 @@ export default function Home() {
             height={150}
           />
         </div>
-        <div className="text-white font-semibold text-4xl">
+        <div className="text-center text-white font-semibold text-4xl">
           Associate Software Engineer
         </div>
         <div className="text-white font-semibold text-4xl">

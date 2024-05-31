@@ -153,7 +153,7 @@ const Page = () => {
   };
 
   return (
-    <div className="flex justify-center items-stretch align-i px-10 py-5 gap-10 max-xl:flex-col">
+    <div className="flex justify-center items-stretch align-i px-10 max-md:px-3 py-5 gap-10 max-xl:flex-col">
       <div className="m p-6 bg-gray-100 rounded-lg shadow-md flex-auto ring-2 ring-[#E0E0E0] w-3/5 max-xl:w-full">
         <div className="flex justify-between items-center mb-6">
           <h4 className="text-xl font-bold">Calculate Your Salary</h4>
