@@ -26,6 +26,9 @@ export default function Home() {
         <div className="text-white font-semibold text-4xl">
           Associate Software Engineer
         </div>
+        <div className="text-white font-semibold text-4xl">
+          Assignment
+        </div>
         <div className="flex flex-col justify-center items-center gap-16">
           <Tooltip showArrow={true} color="secondary" content="Github repo">
             <a
