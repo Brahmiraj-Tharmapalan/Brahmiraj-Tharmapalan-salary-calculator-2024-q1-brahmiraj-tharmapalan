@@ -6,7 +6,6 @@ import { FaGithub } from "react-icons/fa";
 import { FaCalculator } from "react-icons/fa";
 
 export default function Home() {
-  
   return (
     <main className="">
       <div className="flex-center min-h-screen w-full bg-emerald-950 bg-main-bg bg-cover bg-fixed bg-center flex-col gap-16">

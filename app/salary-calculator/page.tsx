@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Checkbox } from "@nextui-org/checkbox";
-import { SlReload } from "react-icons/sl";
 import { IoClose } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +16,7 @@ import { getDeductions, resetDeductions } from "@/redux/deductions/Deductions";
 import calculateTax from "@/lib/calculateTax";
 import Image from "next/image";
 
+/*=============== Types ===============*/
 interface Earnings {
   id: number;
   value: string;
